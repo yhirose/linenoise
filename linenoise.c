@@ -312,8 +312,25 @@ static int enableRawMode(int fd) {
     /* input modes: no break, no CR to NL, no parity check, no strip char,
      * no start/stop output control. */
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+
+    /*
+     *  disable post processing will cause funky output in multi-threading environ
+     *
+     *  example:
+     *  ```
+     *  printf("this is line one\n")
+     *  printf("this is line two\n")
+     *  ```
+     *
+     *  output:
+     *  this is line one
+     *                  this is line two
+     *
+     *  so, we should not disable post processing
+     */
+
     /* output modes - disable post processing */
-    raw.c_oflag &= ~(OPOST);
+    /* raw.c_oflag &= ~(OPOST); */
     /* control modes - set 8 bit chars */
     raw.c_cflag |= (CS8);
     /* local modes - choing off, canonical off, no extended functions,
